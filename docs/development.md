@@ -5,14 +5,14 @@ Development happens against a locally linked plugin; no GitHub install needed.
 ## Dev loop
 
 ```
-make build                       # produces ./target/release/herdr-open-in-zed
 herdr plugin link .              # register the working directory as a plugin
-herdr plugin action list --plugin open-in-zed
-herdr plugin action invoke open-in-zed.open
-herdr plugin log list --plugin open-in-zed
+make build                       # produces ./target/release/herdr-open-in
+herdr plugin action list --plugin open-in
+herdr plugin action invoke open-in.open
+herdr plugin log list --plugin open-in
 ```
 
-`plugin link` does not run build commands, so rebuild after every source change. Unlink with `herdr plugin unlink open-in-zed`.
+An earlier, pre-rename plugin link may still point at a directory that no longer exists; unlink that stale plugin first, then link again. `plugin link` does not run build commands, so rebuild after every source change. The picker dialog needs a real terminal: raw mode goes through `stty`, so drive it through the `open-in.open` action (a popup) rather than running `./target/release/herdr-open-in` directly. That popup runs as its own pane process, so herdr does not capture its stderr or exit status: `herdr plugin log list --plugin open-in` lists the plugin's action records (the `open-in.open` invocation's own exit status, stdout and stderr), not the popup pane it opens. Errors the picker raises before the dialog starts — a missing context, a bad `workspace_id`, or no detected editor — can be read directly by running the binary from a terminal with `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and a synthetic `HERDR_PLUGIN_CONTEXT_JSON`. Unlink with `herdr plugin unlink open-in`.
 
 ## Checks
 
@@ -27,12 +27,13 @@ make fmt-check   # prettier check
 
 ## Version sync
 
-The version lives in two files that must match:
+The version lives in three files that must match:
 
 - `Cargo.toml`
+- `Cargo.lock`
 - `herdr-plugin.toml`
 
-Bump both in the same commit. A release is cut by pushing a tag `v<version>` (e.g. `v0.1.0`); the release workflow fails if the tag does not match both files. For release steps, see [CONTRIBUTING.md](../CONTRIBUTING.md).
+Bump all three in the same commit. A release is cut by pushing a tag `v<version>` (e.g. `v0.2.0`); the release workflow fails if the tag does not match `Cargo.toml` and `herdr-plugin.toml`. For release steps, see [CONTRIBUTING.md](../CONTRIBUTING.md).
 
 ## Notes
 

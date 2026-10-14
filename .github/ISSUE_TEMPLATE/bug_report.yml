@@ -8,13 +8,13 @@ body:
       label: Checks
       options:
         - label: I am running a supported herdr version (see README → Requirements)
-        - label: "I installed the Zed CLI via Zed's command palette (`cli: install cli binary`) or it is already on PATH"
+        - label: "I installed the CLI for the editor I am reporting about (for Zed, `cli: install cli binary` in the command palette) or it is already on PATH"
         - label: I searched existing issues for this problem
   - type: textarea
     id: what-happened
     attributes:
       label: What happened?
-      description: Include the exact error message from the action or from `herdr plugin log list --plugin open-in-zed`.
+      description: Include the exact error message from the action or from `herdr plugin log list --plugin open-in`.
     validations:
       required: true
   - type: textarea
@@ -33,7 +33,7 @@ body:
       value: |
         - OS:
         - herdr --version:
-        - zed --version:
+        - Editor CLI --version (e.g. `zed --version`):
         - Invocation method:
     validations:
       required: true

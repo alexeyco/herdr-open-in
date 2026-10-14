@@ -33,6 +33,22 @@ pub(crate) fn dir_from_context(json: &str) -> Result<String, String> {
     Ok(dir.to_string())
 }
 
+/// Reads the `workspace_id` from the plugin context JSON.
+/// A missing, non-string or whitespace-only value is an error.
+pub(crate) fn workspace_id_from_context(json: &str) -> Result<String, String> {
+    let v: Value =
+        serde_json::from_str(json).map_err(|e| format!("invalid plugin context JSON: {e}"))?;
+    let id = v
+        .get("workspace_id")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .ok_or_else(|| {
+            "no workspace_id in plugin context; invoke this action inside a workspace".to_string()
+        })?;
+    Ok(id.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -92,5 +108,46 @@ mod tests {
     fn unescapes_windows_and_unicode_paths() {
         let json = r#"{"worktree":{"checkout_path":"C:\\Users\\caf\u00e9"}}"#;
         assert_eq!(dir_from_context(json).as_deref(), Ok(r"C:\Users\café"));
+    }
+
+    #[test]
+    fn workspace_id_from_full_context() {
+        assert_eq!(workspace_id_from_context(CTX).as_deref(), Ok("ws-1"));
+    }
+
+    #[test]
+    fn blank_workspace_id_is_an_error() {
+        assert!(
+            workspace_id_from_context(r#"{"workspace_id":"  "}"#)
+                .unwrap_err()
+                .contains("no workspace_id")
+        );
+    }
+
+    #[test]
+    fn missing_workspace_id_is_an_error() {
+        assert!(
+            workspace_id_from_context(r#"{"tab_id":"t1"}"#)
+                .unwrap_err()
+                .contains("no workspace_id")
+        );
+    }
+
+    #[test]
+    fn non_string_workspace_id_is_an_error() {
+        assert!(
+            workspace_id_from_context(r#"{"workspace_id":42}"#)
+                .unwrap_err()
+                .contains("no workspace_id")
+        );
+    }
+
+    #[test]
+    fn invalid_json_workspace_id_is_an_error() {
+        assert!(
+            workspace_id_from_context("{not json")
+                .unwrap_err()
+                .contains("invalid")
+        );
     }
 }
