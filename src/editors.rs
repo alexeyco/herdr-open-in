@@ -182,15 +182,15 @@ pub(crate) fn probe_names(editor: &Editor) -> impl Iterator<Item = &'static str>
 }
 
 /// Pure core of [`detect`]: `probe` answers whether a CLI command is on
-/// `PATH`, `bundle_exists` answers whether the macOS app bundle with the given
-/// stem is installed. Kept injectable so tests do not depend on the host.
+/// `PATH`, `bundle_exists` answers whether the row's app bundle is installed.
+/// Kept injectable so tests do not depend on the host.
 fn detect_with(
     probe: &dyn Fn(&str) -> bool,
-    bundle_exists: &dyn Fn(&str) -> bool,
+    bundle_exists: &dyn Fn(&Editor) -> bool,
 ) -> Vec<&'static Editor> {
     CATALOG
         .iter()
-        .filter(|editor| probe_names(editor).any(probe) || editor.bundle.is_some_and(bundle_exists))
+        .filter(|editor| probe_names(editor).any(probe) || bundle_exists(editor))
         .collect()
 }
 
@@ -205,18 +205,23 @@ fn probe_on_path(cmd: &str) -> bool {
         .is_ok_and(|s| s.success())
 }
 
-/// macOS app-bundle lookup for a catalog row's bundle stem.
+/// App-bundle lookup for a catalog row.
 ///
-/// The bundle is accepted only when its `.app` directory exists. When the row
-/// also ships an inner CLI, that CLI must exist (or be executable) inside the
+/// Reads the row's bundle fields on every platform so the catalog keeps one
+/// shape; the platform difference lives in [`bundle_present`]. On macOS the
+/// bundle is accepted only when its `.app` directory exists and, when the row
+/// also ships an inner CLI, that CLI exists (or is executable) inside the
 /// bundle, so a leftover empty bundle directory is not mistaken for a working
 /// install.
+fn bundle_installed(editor: &Editor) -> bool {
+    editor
+        .bundle
+        .is_some_and(|stem| bundle_present(stem, editor.bundle_cli))
+}
+
+/// macOS app-bundle directory probe for a row's bundle stem.
 #[cfg(target_os = "macos")]
-fn bundle_installed(stem: &str) -> bool {
-    let inner_cli = CATALOG
-        .iter()
-        .find(|editor| editor.bundle == Some(stem))
-        .and_then(|editor| editor.bundle_cli);
+fn bundle_present(stem: &str, inner_cli: Option<&str>) -> bool {
     applications_dirs().iter().any(|dir| {
         let bundle = dir.join(format!("{stem}.app"));
         if !bundle.is_dir() {
@@ -234,7 +239,7 @@ fn bundle_installed(stem: &str) -> bool {
 
 /// Linux and Windows have no app bundles; the CLI probe is the only source.
 #[cfg(not(target_os = "macos"))]
-fn bundle_installed(_stem: &str) -> bool {
+fn bundle_present(_stem: &str, _inner_cli: Option<&str>) -> bool {
     false
 }
 
@@ -320,7 +325,7 @@ mod tests {
         // Debian and Ubuntu ship the Zed CLI only as `zeditor`; with no bare
         // `zed` command the row must still be detected through its alias.
         let probe = |cmd: &str| cmd == "zeditor";
-        let bundle = |_stem: &str| false;
+        let bundle = |_editor: &Editor| false;
         let found = detect_with(&probe, &bundle);
         let ids: Vec<&str> = found.iter().map(|e| e.id).collect();
         assert_eq!(ids, ["zed"]);
@@ -338,7 +343,7 @@ mod tests {
     #[test]
     fn detect_keeps_probe_hits_in_catalog_order() {
         let probe = |cmd: &str| cmd == "windsurf" || cmd == "nvim";
-        let bundle = |_stem: &str| false;
+        let bundle = |_editor: &Editor| false;
         let found = detect_with(&probe, &bundle);
         let ids: Vec<&str> = found.iter().map(|e| e.id).collect();
         assert_eq!(ids, ["windsurf", "nvim"]);
@@ -347,7 +352,7 @@ mod tests {
     #[test]
     fn detect_accepts_a_macos_bundle_without_a_cli_probe() {
         let probe = |_cmd: &str| false;
-        let bundle = |stem: &str| stem == "Android Studio";
+        let bundle = |editor: &Editor| editor.bundle == Some("Android Studio");
         let found = detect_with(&probe, &bundle);
         let ids: Vec<&str> = found.iter().map(|e| e.id).collect();
         assert_eq!(ids, ["android-studio"]);
@@ -356,7 +361,7 @@ mod tests {
     #[test]
     fn detect_returns_empty_when_nothing_is_installed() {
         let probe = |_cmd: &str| false;
-        let bundle = |_stem: &str| false;
+        let bundle = |_editor: &Editor| false;
         let found = detect_with(&probe, &bundle);
         assert!(found.is_empty(), "expected no editors, got {found:?}");
     }

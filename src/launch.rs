@@ -14,7 +14,6 @@ use std::os::unix::process::CommandExt;
 use crate::editors::{DIR_PLACEHOLDER, Editor, probe_names};
 
 /// Program used for the macOS app-bundle fallback.
-#[cfg(any(target_os = "macos", test))]
 const OPEN_PROGRAM: &str = "open";
 
 /// macOS application directory searched for app bundles.
@@ -72,7 +71,6 @@ fn cli_argv(editor: &Editor, dir: &str) -> Vec<String> {
 
 /// argv passed to [`OPEN_PROGRAM`] for a bundle launch: a new instance (`-n`)
 /// of the application (`-a`) opening `dir`.
-#[cfg(any(target_os = "macos", test))]
 fn bundle_argv(bundle: &str, dir: &str) -> Vec<String> {
     vec![
         "-n".to_string(),
@@ -82,22 +80,18 @@ fn bundle_argv(bundle: &str, dir: &str) -> Vec<String> {
     ]
 }
 
-/// macOS bundle fallback. Returns `None` when the row has no bundle or the
-/// bundle is not installed, so [`launch_gui`] can report a missing launcher.
-#[cfg(target_os = "macos")]
+/// Bundle fallback shared by every platform: returns `None` when the row has
+/// no bundle or the bundle is not installed on this host, so [`launch_gui`]
+/// can report a missing launcher. Off macOS [`bundle_dir`] never finds an app
+/// bundle, so only the CLI path can succeed there.
 fn launch_bundle(editor: &Editor, dir: &str) -> Option<Result<(), String>> {
-    let bundle = find_bundle(editor)?;
+    let stem = editor.bundle?;
+    let bundle = bundle_dir(stem)?;
     Some(spawn_detached(
         editor,
         OPEN_PROGRAM,
         &bundle_argv(&bundle, dir),
     ))
-}
-
-/// Other platforms have no app bundles; only the CLI path can succeed.
-#[cfg(not(target_os = "macos"))]
-fn launch_bundle(_editor: &Editor, _dir: &str) -> Option<Result<(), String>> {
-    None
 }
 
 /// Builds the command used by [`spawn_detached`]: `program` with `argv`, all
@@ -187,12 +181,11 @@ fn fallbacks(_editor: &Editor) -> Vec<String> {
     Vec::new()
 }
 
-/// macOS app-bundle lookup for a row's bundle stem under `/Applications` and
-/// `~/Applications`. Returns the `.app` path as a string when the directory
-/// exists.
+/// macOS app-bundle directory lookup for a row's bundle stem under
+/// `/Applications` and `~/Applications`. Returns the `.app` path as a string
+/// when the directory exists.
 #[cfg(target_os = "macos")]
-fn find_bundle(editor: &Editor) -> Option<String> {
-    let stem = editor.bundle?;
+fn bundle_dir(stem: &str) -> Option<String> {
     let name = format!("{stem}.app");
     let mut candidates = vec![std::path::Path::new(MACOS_APPLICATIONS_DIR).join(&name)];
     if let Some(home) = std::env::var_os("HOME") {
@@ -202,6 +195,12 @@ fn find_bundle(editor: &Editor) -> Option<String> {
         .into_iter()
         .find(|path| path.is_dir())
         .map(|path| path.display().to_string())
+}
+
+/// Linux and Windows have no app bundles; no directory can match.
+#[cfg(not(target_os = "macos"))]
+fn bundle_dir(_stem: &str) -> Option<String> {
+    None
 }
 
 /// Error for a GUI editor that has neither a runnable CLI nor an installed
