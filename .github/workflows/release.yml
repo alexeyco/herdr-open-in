@@ -54,7 +54,7 @@ jobs:
           cache-key: ${{ matrix.target }}
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
-          bin: herdr-open-in-zed
+          bin: herdr-open-in
           target: ${{ matrix.target }}
           locked: true
           checksum: sha256

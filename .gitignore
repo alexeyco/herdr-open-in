@@ -1,2 +1,9 @@
-/target
+# Rust
+/target/
+
+# macOS
 .DS_Store
+
+# Microspec task
+# See: https://github.com/alexeyco/microspec
+TASK.md

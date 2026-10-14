@@ -3,8 +3,8 @@
 version = 4
 
 [[package]]
-name = "herdr-open-in-zed"
-version = "0.1.0"
+name = "herdr-open-in"
+version = "0.2.0"
 dependencies = [
  "serde_json",
 ]

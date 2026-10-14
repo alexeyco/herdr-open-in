@@ -4,6 +4,20 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.2.0
+
+### Added
+
+- Editor picker: the `open-in.open` action opens a popup listing the editors installed on this machine out of an eleven-row catalog (Zed, VS Code, Cursor, Windsurf, IntelliJ IDEA, WebStorm, PyCharm, Android Studio, nvim, vim, helix), detecting each one by probing its CLI on `PATH` and, on macOS, by looking for its app bundle in `/Applications` and `~/Applications`.
+- Choosing a GUI editor opens the workspace directory in it as a detached process, while nvim, vim and helix open a new herdr tab in the current workspace.
+- The last picked editor is saved to `$HERDR_PLUGIN_STATE_DIR/last-editor` and pre-marked the next time the picker opens; a single detected editor still shows the dialog.
+- A machine with no catalog editor installed exits with status 1 after one error line naming the editors that were searched for.
+
+### Changed
+
+- Renamed the plugin id and binary from the earlier Zed-only name to `open-in` / `herdr-open-in`. This is breaking for existing keybindings such as `prefix+shift+o`: the qualified action id is now `open-in.open`.
+- Version bumped to `0.2.0`.
+
 ## 0.1.0
 
 ### Added

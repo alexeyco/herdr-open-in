@@ -1,17 +1,31 @@
 # Manifest reference: https://herdr.dev/docs/plugins/
-id = "open-in-zed"
-name = "Open in Zed"
-version = "0.1.0"
+id = "open-in"
+name = "Open in"
+version = "0.2.0"
 min_herdr_version = "0.9.0"
-description = "Opens the current herdr workspace in the Zed editor"
+description = "Opens the current herdr workspace in the editor you pick"
 platforms = ["linux", "macos"]
 
 [[build]]
 command = ["cargo", "build", "--release", "--locked"]
 
+[[panes]]
+id = "picker"
+title = "Open in"
+placement = "popup"
+width = "40%"
+height = 14
+command = ["./target/release/herdr-open-in"]
+
+[[panes]]
+id = "editor"
+title = "Editor"
+placement = "tab"
+command = ["./target/release/herdr-open-in"]
+
 [[actions]]
 id = "open"
-title = "Open in Zed"
-description = "Opens the workspace directory in a new Zed window"
+title = "Open in editor"
+description = "Picks an editor and opens the workspace directory in it"
 contexts = ["workspace"]
-command = ["./target/release/herdr-open-in-zed"]
+command = ["./target/release/herdr-open-in"]
