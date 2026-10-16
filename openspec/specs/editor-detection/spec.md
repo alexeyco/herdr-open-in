@@ -126,4 +126,4 @@ process exits with status 1 printing that error under the `open-in: ` prefix.
   the install-location hint, of the form `no supported editor was found;
 install one of: …`, immediately; no dialog opens, and `main` prints it to
   stderr prefixed with `open-in: ` and exits 1 (`src/main.rs:110-113,49-53,
-197-205`, test at `src/main.rs:286-296`)
+198-205`, test at `src/main.rs:286-296`)
