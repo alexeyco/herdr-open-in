@@ -4,6 +4,21 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## 0.3.0
+
+### Added
+
+- The picker now matches herdr's theme dialog: the selected editor's row is highlighted across the full width of the popup in the theme's accent color with a `▸` cursor, the last-used editor's row carries a ` ✓` mark, and a static help footer (`↑↓ select  enter open  esc cancel`) is docked to the bottom of the popup under one blank spacer line.
+- Theme colors are resolved from `[theme] name` in the herdr config file (`$HERDR_CONFIG_PATH`, else `~/.config/herdr/config.toml`): the palettes of all 18 built-in herdr 0.9.5 themes are embedded, and `terminal`, an unreadable config, or an unknown theme falls back to an ANSI-16 palette. `[theme.custom]` overrides and `auto_switch` are not followed.
+- Minimal bottom-scroll when the list is taller than the popup: the real popup size is re-read via `stty size` every frame (80×24 assumed when unavailable), so resizing the terminal is handled and no scrollbars or position indicators are shown.
+
+### Changed
+
+- The catalog rows are now alphabetical (case-insensitive): Android Studio, Cursor, helix, IntelliJ IDEA, nvim, PyCharm, vim, VS Code, WebStorm, Windsurf, Zed. With no remembered choice the picker opens on the first row, Android Studio, instead of Zed.
+- The picker popup is 16 lines tall instead of 14: the full eleven-row catalog, the blank top line, the spacer and the footer now fit exactly without scrolling.
+- Added `toml` as a second runtime dependency for reading the herdr config file.
+- Version bumped to `0.3.0`.
+
 ## 0.2.0
 
 ### Added

@@ -50,27 +50,18 @@ pub(crate) struct Editor {
     pub bundle_cli: Option<&'static str>,
 }
 
-/// Every editor the picker can offer, in menu order.
+/// Every editor the picker can offer, in menu order: ordered by display
+/// name, compared case-insensitively (ASCII fold, no locale collation).
 pub(crate) const CATALOG: &[Editor] = &[
     Editor {
-        id: "zed",
-        name: "Zed",
+        id: "android-studio",
+        name: "Android Studio",
         kind: EditorKind::Gui,
-        cmd: "zed",
-        alts: &["zeditor"],
-        args: &["-n", DIR_PLACEHOLDER],
-        bundle: Some("Zed"),
-        bundle_cli: Some("Contents/MacOS/cli"),
-    },
-    Editor {
-        id: "code",
-        name: "VS Code",
-        kind: EditorKind::Gui,
-        cmd: "code",
+        cmd: "studio",
         alts: &[],
-        args: &["-n", DIR_PLACEHOLDER],
-        bundle: Some("Visual Studio Code"),
-        bundle_cli: Some("Contents/Resources/app/bin/code"),
+        args: &[DIR_PLACEHOLDER],
+        bundle: Some("Android Studio"),
+        bundle_cli: Some("Contents/MacOS/studio"),
     },
     Editor {
         id: "cursor",
@@ -83,14 +74,14 @@ pub(crate) const CATALOG: &[Editor] = &[
         bundle_cli: Some("Contents/Resources/app/bin/cursor"),
     },
     Editor {
-        id: "windsurf",
-        name: "Windsurf",
-        kind: EditorKind::Gui,
-        cmd: "windsurf",
+        id: "helix",
+        name: "helix",
+        kind: EditorKind::Terminal,
+        cmd: "hx",
         alts: &[],
-        args: &["-n", DIR_PLACEHOLDER],
-        bundle: Some("Windsurf"),
-        bundle_cli: Some("Contents/Resources/app/bin/windsurf"),
+        args: &[DIR_PLACEHOLDER],
+        bundle: None,
+        bundle_cli: None,
     },
     Editor {
         id: "idea",
@@ -103,14 +94,14 @@ pub(crate) const CATALOG: &[Editor] = &[
         bundle_cli: Some("Contents/MacOS/idea"),
     },
     Editor {
-        id: "webstorm",
-        name: "WebStorm",
-        kind: EditorKind::Gui,
-        cmd: "webstorm",
+        id: "nvim",
+        name: "nvim",
+        kind: EditorKind::Terminal,
+        cmd: "nvim",
         alts: &[],
         args: &[DIR_PLACEHOLDER],
-        bundle: Some("WebStorm"),
-        bundle_cli: Some("Contents/MacOS/webstorm"),
+        bundle: None,
+        bundle_cli: None,
     },
     Editor {
         id: "pycharm",
@@ -123,26 +114,6 @@ pub(crate) const CATALOG: &[Editor] = &[
         bundle_cli: Some("Contents/MacOS/pycharm"),
     },
     Editor {
-        id: "android-studio",
-        name: "Android Studio",
-        kind: EditorKind::Gui,
-        cmd: "studio",
-        alts: &[],
-        args: &[DIR_PLACEHOLDER],
-        bundle: Some("Android Studio"),
-        bundle_cli: Some("Contents/MacOS/studio"),
-    },
-    Editor {
-        id: "nvim",
-        name: "nvim",
-        kind: EditorKind::Terminal,
-        cmd: "nvim",
-        alts: &[],
-        args: &[DIR_PLACEHOLDER],
-        bundle: None,
-        bundle_cli: None,
-    },
-    Editor {
         id: "vim",
         name: "vim",
         kind: EditorKind::Terminal,
@@ -153,14 +124,44 @@ pub(crate) const CATALOG: &[Editor] = &[
         bundle_cli: None,
     },
     Editor {
-        id: "helix",
-        name: "helix",
-        kind: EditorKind::Terminal,
-        cmd: "hx",
+        id: "code",
+        name: "VS Code",
+        kind: EditorKind::Gui,
+        cmd: "code",
+        alts: &[],
+        args: &["-n", DIR_PLACEHOLDER],
+        bundle: Some("Visual Studio Code"),
+        bundle_cli: Some("Contents/Resources/app/bin/code"),
+    },
+    Editor {
+        id: "webstorm",
+        name: "WebStorm",
+        kind: EditorKind::Gui,
+        cmd: "webstorm",
         alts: &[],
         args: &[DIR_PLACEHOLDER],
-        bundle: None,
-        bundle_cli: None,
+        bundle: Some("WebStorm"),
+        bundle_cli: Some("Contents/MacOS/webstorm"),
+    },
+    Editor {
+        id: "windsurf",
+        name: "Windsurf",
+        kind: EditorKind::Gui,
+        cmd: "windsurf",
+        alts: &[],
+        args: &["-n", DIR_PLACEHOLDER],
+        bundle: Some("Windsurf"),
+        bundle_cli: Some("Contents/Resources/app/bin/windsurf"),
+    },
+    Editor {
+        id: "zed",
+        name: "Zed",
+        kind: EditorKind::Gui,
+        cmd: "zed",
+        alts: &["zeditor"],
+        args: &["-n", DIR_PLACEHOLDER],
+        bundle: Some("Zed"),
+        bundle_cli: Some("Contents/MacOS/cli"),
     },
 ];
 
@@ -270,19 +271,51 @@ mod tests {
         assert_eq!(
             ids,
             [
-                "zed",
-                "code",
-                "cursor",
-                "windsurf",
-                "idea",
-                "webstorm",
-                "pycharm",
                 "android-studio",
-                "nvim",
-                "vim",
+                "cursor",
                 "helix",
+                "idea",
+                "nvim",
+                "pycharm",
+                "vim",
+                "code",
+                "webstorm",
+                "windsurf",
+                "zed",
             ]
         );
+    }
+
+    #[test]
+    fn catalog_rows_are_ordered_by_display_name_case_insensitively() {
+        // Spec scenario "Alphabetical display order": the source list is
+        // ordered by display name under an ASCII case-insensitive fold, with
+        // no locale collation, so VS Code sits between vim and WebStorm.
+        let names: Vec<&str> = CATALOG.iter().map(|e| e.name).collect();
+        assert_eq!(
+            names,
+            [
+                "Android Studio",
+                "Cursor",
+                "helix",
+                "IntelliJ IDEA",
+                "nvim",
+                "PyCharm",
+                "vim",
+                "VS Code",
+                "WebStorm",
+                "Windsurf",
+                "Zed",
+            ]
+        );
+        for pair in names.windows(2) {
+            assert!(
+                pair[0].to_ascii_lowercase() < pair[1].to_ascii_lowercase(),
+                "{} must precede {} in case-insensitive order",
+                pair[0],
+                pair[1]
+            );
+        }
     }
 
     #[test]
@@ -346,7 +379,7 @@ mod tests {
         let bundle = |_editor: &Editor| false;
         let found = detect_with(&probe, &bundle);
         let ids: Vec<&str> = found.iter().map(|e| e.id).collect();
-        assert_eq!(ids, ["windsurf", "nvim"]);
+        assert_eq!(ids, ["nvim", "windsurf"]);
     }
 
     #[test]
@@ -367,13 +400,13 @@ mod tests {
     }
 
     #[test]
-    fn terminal_rows_are_nvim_vim_and_helix_and_have_no_bundle() {
+    fn terminal_rows_are_helix_nvim_and_vim_and_have_no_bundle() {
         let terminals: Vec<&str> = CATALOG
             .iter()
             .filter(|e| e.kind == EditorKind::Terminal)
             .map(|e| e.id)
             .collect();
-        assert_eq!(terminals, ["nvim", "vim", "helix"]);
+        assert_eq!(terminals, ["helix", "nvim", "vim"]);
         for e in CATALOG.iter().filter(|e| e.kind == EditorKind::Terminal) {
             assert!(e.bundle.is_none(), "{}: terminal row with bundle", e.id);
         }
