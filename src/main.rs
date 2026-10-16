@@ -20,6 +20,7 @@ mod launch;
 mod picker;
 mod state;
 mod tab;
+mod theme;
 
 use std::process::Command;
 

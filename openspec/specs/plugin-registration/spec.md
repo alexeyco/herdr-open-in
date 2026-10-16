@@ -18,14 +18,14 @@ line prefixed `open-in: ` and exit code 1.
 ### Requirement: Manifest declares plugin identity and build
 
 The plugin SHALL register with herdr through `herdr-plugin.toml` declaring
-id `open-in`, name "Open in", version `0.2.0`, minimum herdr version `0.9.0`,
+id `open-in`, name "Open in", version `0.3.0`, minimum herdr version `0.9.0`,
 platforms `linux` and `macos`, and a build command of
 `cargo build --release --locked`. (herdr-plugin.toml:2-10)
 
 #### Scenario: Manifest fields are readable by herdr
 
 - **WHEN** herdr loads the plugin manifest
-- **THEN** the plugin is identified as `open-in` at version 0.2.0, is built
+- **THEN** the plugin is identified as `open-in` at version 0.3.0, is built
   with `cargo build --release --locked`, and is offered only on linux and
   macos
 
@@ -34,21 +34,35 @@ platforms `linux` and `macos`, and a build command of
 - **WHEN** the plugin version is bumped
 - **THEN** the manifest and the crate declare the same version string, and
   herdr reports the plugin at that version (both `herdr-plugin.toml:4` and
-  `Cargo.toml:3` currently say `0.2.0`)
+  `Cargo.toml:3` currently say `0.3.0`)
 
 ### Requirement: Manifest declares picker and editor panes
 
 The manifest SHALL declare two panes, both running
 `./target/release/herdr-open-in`: a `picker` pane titled "Open in" placed as
-a popup with width `40%` and height `14`, and an `editor` pane titled
-"Editor" placed as a tab. (herdr-plugin.toml:12-24; the popup geometry is
-part of this contract by decision)
+a popup with width `40%` and height `16`, and an `editor` pane titled
+"Editor" placed as a tab. The height is part of this contract: the popup's
+inner area (height minus the two border rows herdr draws) must fit the full
+11-entry catalog plus the frame chrome without scrolling.
+(herdr-plugin.toml:12-24)
+
+At height 16 the inner 14 lines are exactly 1 blank top line + 11 catalog
+rows + 1 blank spacer + 1 help footer — the catalog fits at exact capacity
+with no spare row; further catalog growth triggers the picker's scroll
+window by design.
 
 #### Scenario: Picker popup geometry
 
 - **WHEN** herdr opens the `picker` pane
-- **THEN** it renders a popup titled "Open in" sized 40% wide and 14 lines
+- **THEN** it renders a popup titled "Open in" sized 40% wide and 16 lines
   tall
+
+#### Scenario: Full catalog fits without scrolling
+
+- **WHEN** the popup opens on a machine with all catalog entries detected
+- **THEN** all 11 editor rows, the blank top line, the blank spacer line, and
+  the help footer occupy all 14 inner lines in the first frame with the scroll
+  window at zero and no row hidden
 
 #### Scenario: Editor pane placement
 

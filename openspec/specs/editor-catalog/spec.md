@@ -12,9 +12,10 @@ placeholder, and, for GUI rows, a macOS app-bundle stem plus the optional path
 of a CLI inside that bundle. The stable ids are the externally visible surface:
 they are what the picker and the tab handoff pass through `OPEN_IN_EDITOR`,
 what the last-editor state file persists, and what error messages list. Which
-rows exist and in which order the menu renders them is an implementation
-detail; the per-id id/kind/argv shape and the structural invariants below are
-the contract that detection, launching, and state handling depend on.
+rows exist and in which order the menu renders them — alphabetically by
+display name — is a contract pinned below; the per-id id/kind/argv shape and
+the structural invariants below are the contract that detection, launching,
+and state handling depend on.
 
 ## Requirements
 
@@ -145,3 +146,20 @@ primary command.
 - **THEN** it uses the catalog id string unchanged, so ids form the contract
   surface for the state file and the `OPEN_IN_EDITOR` environment variable
   (`src/editors.rs:26-27`, `src/main.rs:43-47,143`, `src/state.rs:1-29`)
+
+### Requirement: Catalog entries are ordered alphabetically
+
+The catalog SHALL list its editor entries ordered by display name, compared
+case-insensitively (ASCII fold, no locale collation). Only the order of the
+source list changes: ids, kinds, commands, and every other per-entry field
+stay as they are. The picker's display order follows from the existing
+"Catalog order preserved" contract (editor-detection) and the menu's
+catalog-order rule, so no other capability needs a delta.
+
+#### Scenario: Alphabetical display order
+
+- **WHEN** the picker receives all catalog entries
+- **THEN** the rows appear in the order Android Studio, Cursor, helix,
+  IntelliJ IDEA, nvim, PyCharm, vim, VS Code, WebStorm, Windsurf, Zed —
+  the catalog's display names in case-insensitive alphabetical order (VS
+  Code sits between vim and WebStorm)
