@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Plugin for [herdr](https://herdr.dev) that opens the current workspace in a picked editor. Behaviour is documented in [README.md](README.md) and [docs/how-it-works.md](docs/how-it-works.md); the editor catalog lives in `src/editors.rs`. Rust; sources under `src/`; single runtime dependency: `serde_json`.
+Plugin for [herdr](https://herdr.dev) that opens the current workspace in a picked editor. Behaviour is documented in [README.md](README.md) and [docs/how-it-works.md](docs/how-it-works.md); the editor catalog lives in `src/editors.rs`. Rust; sources under `src/`; runtime dependencies: `serde_json` and `toml`.
 
 ## Commands
 
