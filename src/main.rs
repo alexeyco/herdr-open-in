@@ -1,6 +1,6 @@
 //! herdr plugin that opens the current workspace in the editor you pick.
 //!
-//! The `open-in.open` action opens the picker as a focused `popup` pane running
+//! The `alexeyco.open-in.open` action opens the picker as a focused `popup` pane running
 //! the `picker` entrypoint; that pane lists every catalog editor detected on
 //! this machine and, on Enter, launches the choice: a GUI editor is started
 //! detached on the resolved directory, while a terminal editor (nvim, vim and helix)
@@ -82,7 +82,7 @@ fn run() -> Result<(), String> {
         )),
         Mode::Unbound => Err(format!(
             "neither {ENTRYPOINT_ENV} nor {ACTION_ENV} is set; \
-             bind `open-in.open` to a key in herdr or invoke it from herdr"
+             bind `alexeyco.open-in.open` to a key in herdr or invoke it from herdr"
         )),
     }
 }

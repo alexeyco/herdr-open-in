@@ -2,11 +2,11 @@
 
 ## Purpose
 
-Defines how the open-in plugin presents itself to herdr and how the single
+Defines how the `alexeyco.open-in` plugin presents itself to herdr and how the single
 binary decides what to do when herdr starts it. The manifest
 (`herdr-plugin.toml`) is the registration contract: identity, target
 platforms, build command, two pane declarations (`picker` as a popup,
-`editor` as a tab), and one workspace-context action `open-in.open`. At
+`editor` as a tab), and one workspace-context action `alexeyco.open-in.open`. At
 runtime the binary dispatches on environment variables herdr sets —
 `HERDR_PLUGIN_ENTRYPOINT_ID` wins over `HERDR_PLUGIN_ACTION_ID` — selecting
 one of the picker, editor, or action-pops-up-picker flows, or failing with a
@@ -18,23 +18,24 @@ line prefixed `open-in: ` and exit code 1.
 ### Requirement: Manifest declares plugin identity and build
 
 The plugin SHALL register with herdr through `herdr-plugin.toml` declaring
-id `open-in`, name "Open in", version `0.3.0`, minimum herdr version `0.9.0`,
-platforms `linux` and `macos`, and a build command of
+id `alexeyco.open-in`, name "Open in", version `0.4.0`, minimum herdr
+version `0.9.0`, platforms `linux` and `macos`, and a build command of
 `cargo build --release --locked`. (herdr-plugin.toml:2-10)
 
 #### Scenario: Manifest fields are readable by herdr
 
 - **WHEN** herdr loads the plugin manifest
-- **THEN** the plugin is identified as `open-in` at version 0.3.0, is built
-  with `cargo build --release --locked`, and is offered only on linux and
-  macos
+- **THEN** the plugin is identified as `alexeyco.open-in` at version 0.4.0,
+  is built with `cargo build --release --locked`, and is offered only on
+  linux and macos
 
 #### Scenario: Version stays in sync with the crate
 
 - **WHEN** the plugin version is bumped
 - **THEN** the manifest and the crate declare the same version string, and
   herdr reports the plugin at that version (both `herdr-plugin.toml:4` and
-  `Cargo.toml:3` currently say `0.3.0`)
+  `Cargo.toml:3` currently say `0.4.0`, and `Cargo.lock` carries the same
+  version for the `herdr-open-in` package)
 
 ### Requirement: Manifest declares picker and editor panes
 
@@ -71,14 +72,18 @@ window by design.
 
 ### Requirement: Manifest declares the open action
 
-The manifest SHALL declare one action `open` (invoked as `open-in.open`)
-titled "Open in editor" with contexts `["workspace"]`, running
-`./target/release/herdr-open-in`. (herdr-plugin.toml:26-31)
+The manifest SHALL declare one action with the local id `open` — kept
+dot-free because herdr forbids dots in local action ids — titled "Open in
+editor" with contexts `["workspace"]`, running
+`./target/release/herdr-open-in`; herdr qualifies it to
+`alexeyco.open-in.open` (plugin id + `.` + action id).
+(herdr-plugin.toml:26-31)
 
 #### Scenario: Action is available in workspace context
 
 - **WHEN** herdr lists actions for a workspace
-- **THEN** "Open in editor" from plugin `open-in` is offered
+- **THEN** "Open in editor" from plugin `alexeyco.open-in` is offered, and
+  invoking it by the qualified id `alexeyco.open-in.open` runs the action
 
 ### Requirement: Entrypoint variable wins over action variable in dispatch
 
@@ -86,14 +91,16 @@ The binary SHALL choose its mode from `HERDR_PLUGIN_ENTRYPOINT_ID` and
 `HERDR_PLUGIN_ACTION_ID`: entrypoint `picker` runs the picker dialog,
 entrypoint `editor` runs the terminal-editor flow, and when no entrypoint is
 set but the action id is set the binary opens the picker popup by running
-the herdr binary at `$HERDR_BIN_PATH`. Environment values that are unset,
-non-UTF-8, or blank after trimming count as absent. (main.rs:29-47, 71-101,
-209-214)
+the herdr binary at `$HERDR_BIN_PATH`. herdr passes the bare local action
+id (`open`) in `HERDR_PLUGIN_ACTION_ID`, never the qualified
+`alexeyco.open-in.open`, and dispatch checks only whether the variable is
+set, not its value. Environment values that are unset, non-UTF-8, or blank
+after trimming count as absent. (main.rs:29-47, 71-101, 209-214)
 
 #### Scenario: Entrypoint present alongside action id
 
 - **WHEN** both `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and
-  `HERDR_PLUGIN_ACTION_ID=open-in.open` are set
+  `HERDR_PLUGIN_ACTION_ID=open` are set
 - **THEN** the process runs the picker dialog, not the action flow
   (verified by the `mode_from` tests, main.rs:226-229)
 
@@ -111,7 +118,7 @@ The binary SHALL exit with an error naming the problem when
 `picker` or `editor`"), and when neither the entrypoint nor the action id is
 set (error text stating that neither `HERDR_PLUGIN_ENTRYPOINT_ID` nor
 `HERDR_PLUGIN_ACTION_ID` is set and directing the user to bind/invoke
-`open-in.open` through herdr). (main.rs:78-85)
+`alexeyco.open-in.open` through herdr). (main.rs:78-85)
 
 #### Scenario: Bogus entrypoint string
 
@@ -123,8 +130,8 @@ set (error text stating that neither `HERDR_PLUGIN_ENTRYPOINT_ID` nor
 #### Scenario: Run directly outside herdr
 
 - **WHEN** the binary is executed with neither environment variable set
-- **THEN** it exits 1 with the unbound-invocation error rather than showing
-  any UI
+- **THEN** it exits 1 with the unbound-invocation error naming
+  `alexeyco.open-in.open` rather than showing any UI
 
 ### Requirement: Error and exit convention
 

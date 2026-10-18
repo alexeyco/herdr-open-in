@@ -8,7 +8,7 @@
 | Editor | `HERDR_PLUGIN_ENTRYPOINT_ID=editor` | the chosen terminal editor in the foreground, inside its own tab |
 | Action | only `HERDR_PLUGIN_ACTION_ID`       | opens the picker popup and exits                                 |
 
-An entrypoint other than `picker` or `editor` is an error naming it, and with neither variable set the binary exits 1 with a hint to bind `open-in.open` in herdr. Every error is one line on stderr prefixed `open-in:` and exits 1.
+An entrypoint other than `picker` or `editor` is an error naming it, and with neither variable set the binary exits 1 with a hint to bind `alexeyco.open-in.open` in herdr. Every error is one line on stderr prefixed `open-in:` and exits 1.
 
 ## Context
 
@@ -99,7 +99,7 @@ nvim, vim and helix run inside herdr, so the picker asks herdr for a new tab run
 
 ```
 $HERDR_BIN_PATH plugin pane open \
-  --plugin open-in --entrypoint editor --placement tab \
+  --plugin alexeyco.open-in --entrypoint editor --placement tab \
   --workspace <workspace_id> --cwd <dir> \
   --env OPEN_IN_EDITOR=<id> --env OPEN_IN_DIR=<dir>
 ```
@@ -124,7 +124,7 @@ The drawable `(rows, cols)` is re-read before every frame by running `stty size`
 
 Colors come from a palette resolved exactly once, before the first frame; the dialog never re-reads the config while it is open. The picker reads `[theme] name` from `$HERDR_CONFIG_PATH` when set, else `~/.config/herdr/config.toml`, and parses the file with the `toml` crate. A name matching one of herdr's 18 built-in themes selects that theme's embedded truecolor palette, transcribed from herdr 0.9.5 `src/app/state.rs`; `terminal`, a missing or unreadable config, invalid TOML, or an unknown name select the ANSI-16 fallback — a blue background on the selected row, a bright-black footer, rows otherwise on the terminal's own colors. `[theme.custom]` overrides are ignored and `auto_switch` is not followed, so the colors may mismatch a theme switched while herdr runs; the embedded table is synced manually when herdr updates.
 
-Action mode (only `HERDR_PLUGIN_ACTION_ID` set) opens this dialog with `$HERDR_BIN_PATH plugin pane open --plugin open-in --entrypoint picker --placement popup --focus` and checks only the exit status; a popup response carries no pane id.
+Action mode (only `HERDR_PLUGIN_ACTION_ID` set) opens this dialog with `$HERDR_BIN_PATH plugin pane open --plugin alexeyco.open-in --entrypoint picker --placement popup --focus` and checks only the exit status; a popup response carries no pane id.
 
 ## The last choice
 
@@ -137,8 +137,8 @@ The context is parsed by [`serde_json`](https://crates.io/crates/serde_json) int
 ## Troubleshooting
 
 - **`no supported editor was found`** — none of the catalog CLIs responded and no macOS bundle matched. Install an editor, put its CLI on `PATH`, or install its app in `/Applications` or `~/Applications`, then re-run the action. The picker writes the line to stderr, exits 1, and the popup closes; the line does not appear in `herdr plugin log list` (see the note on logs below).
-- **`no directory in plugin context`** — the action ran without workspace context. Invoke it from inside a herdr workspace (e.g. via the keybinding or `herdr plugin action invoke open-in.open`), not from a bare shell.
+- **`no directory in plugin context`** — the action ran without workspace context. Invoke it from inside a herdr workspace (e.g. via the keybinding or `herdr plugin action invoke alexeyco.open-in.open`), not from a bare shell.
 - **`HERDR_BIN_PATH is not set or blank`** — the binary was started outside herdr, so it cannot open a pane. Invoke the action through herdr.
 - **`cannot launch <Name>: no `<cmd>` CLI found`** — a GUI editor was selected but its CLI is not on `PATH` and (on macOS) its bundle is not installed.
 - **`<Name> exited with ...`** — a terminal editor launched but returned a non-zero status; run it manually in that directory to see the underlying error.
-- **Logs** — `herdr plugin log list --plugin open-in` lists the plugin's action records: the `open-in.open` invocation's own exit status, stdout and stderr. The picker runs as a separate popup pane, so its stderr and exit status are not captured there. To read a picker error line directly, run the built binary from a terminal with `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and a synthetic `HERDR_PLUGIN_CONTEXT_JSON`; errors raised before the dialog starts print to stderr and exit 1. The herdr server log (`herdr --help` prints the path; `~/.config/herdr/herdr-server.log` on macOS) records a pane exit as `pane child exited … status="ExitStatus { code: 1, … }"`.
+- **Logs** — `herdr plugin log list --plugin alexeyco.open-in` lists the plugin's action records: the `alexeyco.open-in.open` invocation's own exit status, stdout and stderr. The picker runs as a separate popup pane, so its stderr and exit status are not captured there. To read a picker error line directly, run the built binary from a terminal with `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and a synthetic `HERDR_PLUGIN_CONTEXT_JSON`; errors raised before the dialog starts print to stderr and exit 1. The herdr server log (`herdr --help` prints the path; `~/.config/herdr/herdr-server.log` on macOS) records a pane exit as `pane child exited … status="ExitStatus { code: 1, … }"`.
