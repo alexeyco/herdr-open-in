@@ -25,6 +25,17 @@ Zed's CLI is installed from Zed's command palette: run `cli: install cli binary`
 herdr plugin install alexeyco/herdr-open-in
 ```
 
+### Upgrading from 0.3.x
+
+The plugin id is renamed from `open-in` to `alexeyco.open-in`. Uninstall the old plugin, then install the new one:
+
+```
+herdr plugin uninstall open-in
+herdr plugin install alexeyco/herdr-open-in
+```
+
+Rebind the key from `open-in.open` to `alexeyco.open-in.open` in your herdr config. Config and state under the old id are not migrated — the last-chosen editor starts empty.
+
 ## Usage
 
 Bind a key to the action in your herdr config:
@@ -33,14 +44,14 @@ Bind a key to the action in your herdr config:
 [[keys.command]]
 key = "prefix+shift+o"
 type = "plugin_action"
-command = "open-in.open"
+command = "alexeyco.open-in.open"
 description = "Open workspace in an editor"
 ```
 
 Any chord works; see the [herdr keyboard docs](https://herdr.dev/docs/keyboard/) for picking one that your terminal doesn't swallow. You can also invoke the action from the CLI:
 
 ```
-herdr plugin action invoke open-in.open
+herdr plugin action invoke alexeyco.open-in.open
 ```
 
 The popup lists the editors detected on this machine: `↑`/`↓` (or `k`/`j`) move the selection, Enter opens the chosen editor on the workspace directory, Escape or `q` cancels. The last editor you chose is remembered and pre-selected the next time.
@@ -70,8 +81,8 @@ Development happens against a locally linked plugin; no GitHub install needed.
 ```
 make build                       # ./target/release/herdr-open-in
 herdr plugin link .              # register the working directory as a plugin
-herdr plugin action invoke open-in.open
-herdr plugin log list --plugin open-in
+herdr plugin action invoke alexeyco.open-in.open
+herdr plugin log list --plugin alexeyco.open-in
 ```
 
 `plugin link` does not run build commands, so rebuild after every source change. `make check` runs `cargo fmt --check` and clippy, the prettier Markdown check, `cargo test --locked` and the release build. See [docs/development.md](docs/development.md) for the full dev loop and [CONTRIBUTING.md](CONTRIBUTING.md) for what to run before pushing.
