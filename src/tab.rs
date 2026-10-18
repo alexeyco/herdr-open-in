@@ -18,7 +18,7 @@ use crate::editors::Editor;
 /// never assumed: inside a popup the process environment carries this variable.
 const HERDR_BIN_ENV: &str = "HERDR_BIN_PATH";
 
-const PLUGIN_ID: &str = "open-in";
+const PLUGIN_ID: &str = "alexeyco.open-in";
 const ENTRYPOINT_ID: &str = "editor";
 const PICKER_ENTRYPOINT_ID: &str = "picker";
 const EDITOR_ENV: &str = "OPEN_IN_EDITOR";
@@ -194,7 +194,7 @@ mod tests {
                 "pane",
                 "open",
                 "--plugin",
-                "open-in",
+                "alexeyco.open-in",
                 "--entrypoint",
                 "editor",
                 "--placement",
@@ -247,7 +247,7 @@ mod tests {
                 "pane",
                 "open",
                 "--plugin",
-                "open-in",
+                "alexeyco.open-in",
                 "--entrypoint",
                 "picker",
                 "--placement",
