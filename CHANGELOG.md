@@ -6,6 +6,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## 0.4.0
 
+### Added
+
+- Added a `## Comparison` section to the README: this plugin versus the five other herdr editor-launch plugins across seven sourced criteria, with a detailed table, an audit date, and an also-exists list of related tools.
+
 ### Changed
 
 - Renamed the plugin id from `open-in` to `alexeyco.open-in` (author-namespaced). This is breaking for existing keybindings such as `prefix+shift+o`: the qualified action id is now `alexeyco.open-in.open`.
