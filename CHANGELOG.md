@@ -4,6 +4,12 @@ All notable changes to this project are documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+### Fixed
+
+- A terminal editor (`nvim`, `vim`, `helix`) opened in a new herdr tab now takes keyboard focus: after herdr acknowledges the pane, the plugin reads the tab id from the open response and runs `herdr tab focus <TAB_ID>`; previously the new tab stayed inactive behind the agent tab.
+
 ## 0.4.0
 
 ### Added
