@@ -104,7 +104,7 @@ $HERDR_BIN_PATH plugin pane open \
   --env OPEN_IN_EDITOR=<id> --env OPEN_IN_DIR=<dir>
 ```
 
-Plugin pane commands are argv-exec with no shell, and `--env` cannot override the `HERDR_*` variables, hence the custom names. The picker checks `result.plugin_pane.pane.pane_id` in herdr's response and returns; a rejection surfaces herdr's own error text. The `editor` pane process then looks its id up in the catalog and runs the editor in the foreground, owning the tty until it exits, so a non-zero exit becomes `<Name> exited with <status>`.
+Plugin pane commands are argv-exec with no shell, and `--env` cannot override the `HERDR_*` variables, hence the custom names. After the open request succeeds, the picker reads `/result/plugin_pane/pane/tab_id` from herdr's response and runs `$HERDR_BIN_PATH tab focus <TAB_ID>`; this focus command makes the new terminal editor tab active so it receives keyboard input. An open rejection or focus-command failure surfaces herdr's error text. The `editor` pane process then looks its id up in the catalog and runs the editor in the foreground, owning the tty until it exits, so a non-zero exit becomes `<Name> exited with <status>`.
 
 ## The picker dialog
 
