@@ -120,10 +120,12 @@ fn run_tab_focus(argv: &[String]) -> Result<(), String> {
         return Ok(());
     }
     let stderr = String::from_utf8_lossy(&output.stderr);
-    Err(tab_focus_failure(&bin, output.status, &stderr))
+    Err(tab_focus_failure(&bin, &output.status.to_string(), &stderr))
 }
 
-fn tab_focus_failure(bin: &str, status: std::process::ExitStatus, stderr: &str) -> String {
+/// Renders a focus failure. The status arrives pre-rendered because there is
+/// no portable way to construct an `ExitStatus` in tests.
+fn tab_focus_failure(bin: &str, status: &str, stderr: &str) -> String {
     format!("{bin} tab focus exited with {status}: {}", stderr.trim())
 }
 
@@ -264,18 +266,9 @@ mod tests {
 
     #[test]
     fn focus_failure_includes_binary_status_and_trimmed_stderr() {
-        use std::os::unix::process::ExitStatusExt;
-        let status = std::process::ExitStatus::from_raw(1 << 8);
-        let failure = tab_focus_failure("/bin/herdr", status, "  refused\n");
+        let failure = tab_focus_failure("/bin/herdr", "exit status: 1", "  refused\n");
         assert!(failure.starts_with("/bin/herdr tab focus exited with exit status: 1:"));
         assert!(failure.ends_with("refused"));
-    }
-
-    #[test]
-    fn acknowledged_tab_focus_returns_success_without_error_text() {
-        use std::os::unix::process::ExitStatusExt;
-        let status = std::process::ExitStatus::from_raw(0);
-        assert!(status.success());
     }
 
     #[test]
