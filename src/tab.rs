@@ -28,15 +28,23 @@ const DIR_ENV: &str = "OPEN_IN_DIR";
 /// entrypoint, with `editor.id` and `dir` passed through as environment.
 ///
 /// The new tab is fully owned by herdr: this function only asks for it and
-/// checks that herdr acknowledged the request with a pane id, then returns.
+/// checks that herdr acknowledged both pane and tab ids, then focuses the tab.
 pub(crate) fn open_terminal_tab(
     editor: &Editor,
     workspace_id: &str,
     dir: &str,
 ) -> Result<(), String> {
     let argv = pane_open_argv(workspace_id, editor.id, dir);
-    let stdout = run_pane_open(&argv)?;
-    parse_pane_open_response(&stdout).map(|_pane_id| ())
+    open_and_focus_terminal_tab(|| run_pane_open(&argv), run_tab_focus)
+}
+
+fn open_and_focus_terminal_tab(
+    open: impl FnOnce() -> Result<String, String>,
+    focus: impl FnOnce(&[String]) -> Result<(), String>,
+) -> Result<(), String> {
+    let stdout = open()?;
+    let (_pane_id, tab_id) = parse_pane_open_response(&stdout)?;
+    focus(&tab_focus_argv(&tab_id))
 }
 
 /// Opens the picker as a focused `popup` pane. Returns once herdr has accepted
@@ -95,6 +103,32 @@ fn pane_open_argv(workspace_id: &str, editor_id: &str, dir: &str) -> Vec<String>
     ]
 }
 
+/// The exact argv handed to herdr to focus an acknowledged tab.
+fn tab_focus_argv(tab_id: &str) -> Vec<String> {
+    vec!["tab".into(), "focus".into(), tab_id.into()]
+}
+
+/// Runs `tab focus` with `argv`; a failed exit includes the binary, status and
+/// trimmed stderr as returned by herdr.
+fn run_tab_focus(argv: &[String]) -> Result<(), String> {
+    let bin = herdr_bin_path()?;
+    let output = Command::new(&bin)
+        .args(argv)
+        .output()
+        .map_err(|e| format!("failed to run {bin}: {e}"))?;
+    if output.status.success() {
+        return Ok(());
+    }
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    Err(tab_focus_failure(&bin, &output.status.to_string(), &stderr))
+}
+
+/// Renders a focus failure. The status arrives pre-rendered because there is
+/// no portable way to construct an `ExitStatus` in tests.
+fn tab_focus_failure(bin: &str, status: &str, stderr: &str) -> String {
+    format!("{bin} tab focus exited with {status}: {}", stderr.trim())
+}
+
 /// The exact argv for the picker popup, kept pure so it can be tested without
 /// herdr. Plugin pane commands are argv-exec, so every value travels as its
 /// own element and no shell quoting is involved.
@@ -134,15 +168,16 @@ fn herdr_bin_path_from(raw: Option<&str>) -> Result<String, String> {
 }
 
 /// Parses the `plugin pane open` response for the success path, returning the
-/// new pane id read from `result.plugin_pane.pane.pane_id`. An `error` object, a
-/// blank pane id and malformed JSON are all errors carrying herdr's wording.
-fn parse_pane_open_response(stdout: &str) -> Result<String, String> {
+/// pane and tab ids. An `error` object, either blank id and malformed JSON are
+/// errors carrying herdr's wording.
+fn parse_pane_open_response(stdout: &str) -> Result<(String, String), String> {
     let v: Value =
         serde_json::from_str(stdout.trim()).map_err(|e| format!("invalid herdr response: {e}"))?;
     if let Some(message) = error_message(&v) {
         return Err(message);
     }
-    v.pointer("/result/plugin_pane/pane/pane_id")
+    let pane_id = v
+        .pointer("/result/plugin_pane/pane/pane_id")
         .and_then(Value::as_str)
         .map(str::trim)
         .filter(|id| !id.is_empty())
@@ -152,7 +187,20 @@ fn parse_pane_open_response(stdout: &str) -> Result<String, String> {
                 "herdr response has no result.plugin_pane.pane.pane_id: {}",
                 stdout.trim()
             )
-        })
+        })?;
+    let tab_id = v
+        .pointer("/result/plugin_pane/pane/tab_id")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .filter(|id| !id.is_empty())
+        .map(str::to_string)
+        .ok_or_else(|| {
+            format!(
+                "herdr response has no result.plugin_pane.pane.tab_id: {}",
+                stdout.trim()
+            )
+        })?;
+    Ok((pane_id, tab_id))
 }
 
 /// The `error` object of a response, if any, as an actionable message.
@@ -212,14 +260,83 @@ mod tests {
     }
 
     #[test]
+    fn focus_argv_contains_the_acknowledged_tab_id_as_one_argument() {
+        assert_eq!(tab_focus_argv("tab-42"), ["tab", "focus", "tab-42"]);
+    }
+
+    #[test]
+    fn focus_failure_includes_binary_status_and_trimmed_stderr() {
+        let failure = tab_focus_failure("/bin/herdr", "exit status: 1", "  refused\n");
+        assert!(failure.starts_with("/bin/herdr tab focus exited with exit status: 1:"));
+        assert!(failure.ends_with("refused"));
+    }
+
+    #[test]
+    fn open_response_is_parsed_before_focus_and_success_is_returned() {
+        let calls = std::cell::RefCell::new(Vec::new());
+        let result = open_and_focus_terminal_tab(
+            || {
+                calls.borrow_mut().push("open");
+                Ok(r#"{"result":{"plugin_pane":{"pane":{"pane_id":"p1","tab_id":"t1"}}}}"#.into())
+            },
+            |argv| {
+                calls.borrow_mut().push("focus");
+                assert_eq!(argv, ["tab", "focus", "t1"]);
+                Ok(())
+            },
+        );
+        assert_eq!(result, Ok(()));
+        assert_eq!(*calls.borrow(), ["open", "focus"]);
+    }
+
+    #[test]
+    fn focus_failure_propagates_after_acknowledged_open() {
+        let mut focus_called = false;
+        let result = open_and_focus_terminal_tab(
+            || Ok(r#"{"result":{"plugin_pane":{"pane":{"pane_id":"p1","tab_id":"t1"}}}}"#.into()),
+            |argv| {
+                focus_called = true;
+                assert_eq!(argv, ["tab", "focus", "t1"]);
+                Err("focus rejected".into())
+            },
+        );
+        assert!(focus_called);
+        assert_eq!(result, Err("focus rejected".into()));
+    }
+
+    #[test]
+    fn invalid_tab_id_never_calls_focus() {
+        for stdout in [
+            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"p1"}}}}"#,
+            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"p1","tab_id":" "}}}}"#,
+        ] {
+            let mut focus_called = false;
+            let result = open_and_focus_terminal_tab(
+                || Ok(stdout.into()),
+                |_| {
+                    focus_called = true;
+                    Ok(())
+                },
+            );
+            assert!(result.is_err());
+            assert!(!focus_called);
+        }
+    }
+
+    #[test]
     fn argv_env_flags_carry_the_editor_id_and_dir() {
         let argv = pane_open_argv("ws-7", "helix", "/tmp/x y");
+        let cwd = argv
+            .iter()
+            .position(|arg| arg == "--cwd")
+            .and_then(|i| argv.get(i + 1));
         let env_values: Vec<&str> = argv
             .iter()
             .enumerate()
             .filter(|(_, arg)| arg.as_str() == "--env")
             .filter_map(|(i, _)| argv.get(i + 1).map(String::as_str))
             .collect();
+        assert_eq!(cwd.map(String::as_str), Some("/tmp/x y"));
         assert_eq!(env_values, ["OPEN_IN_EDITOR=helix", "OPEN_IN_DIR=/tmp/x y"]);
     }
 
@@ -287,15 +404,18 @@ mod tests {
     #[test]
     fn success_response_yields_the_new_pane_id() {
         let stdout =
-            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"pane-42"},"tab_id":"tab-1"}}}"#;
-        assert_eq!(parse_pane_open_response(stdout).as_deref(), Ok("pane-42"));
+            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"pane-42","tab_id":"tab-1"}}}}"#;
+        assert_eq!(
+            parse_pane_open_response(stdout),
+            Ok(("pane-42".to_string(), "tab-1".to_string()))
+        );
     }
 
     #[test]
     fn error_response_reports_the_code_and_message() {
         let stdout = r#"{"error":{"code":"plugin_not_found","message":"no such plugin"}}"#;
         let err = match parse_pane_open_response(stdout) {
-            Ok(pane) => panic!("expected an error, got {pane}"),
+            Ok(ids) => panic!("expected an error, got {ids:?}"),
             Err(e) => e,
         };
         assert!(err.contains("plugin_not_found"), "unhelpful error: {err}");
@@ -307,7 +427,7 @@ mod tests {
     fn success_response_without_a_pane_id_is_an_error() {
         let stdout = r#"{"result":{"type":"ok"}}"#;
         let err = match parse_pane_open_response(stdout) {
-            Ok(pane) => panic!("expected an error, got {pane}"),
+            Ok(ids) => panic!("expected an error, got {ids:?}"),
             Err(e) => e,
         };
         assert!(err.contains("pane_id"), "unhelpful error: {err}");
@@ -318,6 +438,18 @@ mod tests {
     fn blank_pane_id_is_an_error() {
         let stdout = r#"{"result":{"plugin_pane":{"pane":{"pane_id":"  "}}}}"#;
         assert!(parse_pane_open_response(stdout).is_err());
+    }
+
+    #[test]
+    fn missing_or_blank_tab_id_is_an_error_containing_path_and_stdout() {
+        for stdout in [
+            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"pane-1"}}}}"#,
+            r#"{"result":{"plugin_pane":{"pane":{"pane_id":"pane-1","tab_id":" "}}}}"#,
+        ] {
+            let err = parse_pane_open_response(stdout).unwrap_err();
+            assert!(err.contains("result.plugin_pane.pane.tab_id"));
+            assert!(err.contains(stdout));
+        }
     }
 
     #[test]
@@ -335,7 +467,7 @@ mod tests {
     fn string_error_response_is_reported() {
         let stdout = r#"{"error":"ui_busy"}"#;
         let err = match parse_pane_open_response(stdout) {
-            Ok(pane) => panic!("expected an error, got {pane}"),
+            Ok(ids) => panic!("expected an error, got {ids:?}"),
             Err(e) => e,
         };
         assert!(err.contains("ui_busy"), "unhelpful error: {err}");
