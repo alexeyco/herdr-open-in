@@ -12,7 +12,11 @@ herdr plugin action invoke alexeyco.open-in.open
 herdr plugin log list --plugin alexeyco.open-in
 ```
 
-An earlier, pre-rename plugin link may still point at a directory that no longer exists; unlink that stale plugin first, then link again. `plugin link` does not run build commands, so rebuild after every source change. The picker dialog needs a real terminal: raw mode goes through `stty`, so drive it through the `alexeyco.open-in.open` action (a popup) rather than running `./target/release/herdr-open-in` directly. That popup runs as its own pane process, so herdr does not capture its stderr or exit status: `herdr plugin log list --plugin alexeyco.open-in` lists the plugin's action records (the `alexeyco.open-in.open` invocation's own exit status, stdout and stderr), not the popup pane it opens. Errors the picker raises before the dialog starts — a missing context, a bad `workspace_id`, or no detected editor — can be read directly by running the binary from a terminal with `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and a synthetic `HERDR_PLUGIN_CONTEXT_JSON`. Unlink with `herdr plugin unlink alexeyco.open-in`.
+An earlier, pre-rename plugin link may still point at a directory that no longer exists; unlink that stale plugin first, then link again. `plugin link` does not run build commands, so rebuild after every source change. The picker dialog needs a real terminal, so drive it through the `alexeyco.open-in.open` action (a popup) rather than running `./target/release/herdr-open-in` directly. That popup runs as its own pane process, so herdr does not capture its stderr or exit status: `herdr plugin log list --plugin alexeyco.open-in` lists the plugin's action records (the `alexeyco.open-in.open` invocation's own exit status, stdout and stderr), not the popup pane it opens. Errors the picker raises before the dialog starts — a missing context, a bad `workspace_id`, or no detected editor — can be read directly by running the binary from a terminal with `HERDR_PLUGIN_ENTRYPOINT_ID=picker` and a synthetic `HERDR_PLUGIN_CONTEXT_JSON`. Unlink with `herdr plugin unlink alexeyco.open-in`.
+
+## Code structure
+
+`src/features/` contains editor selection and execution flows. `src/adapters/` handles environment values, herdr context and pane requests, terminal UI, editor discovery and processes, and saved choice state. Keep decisions in features and system calls in adapters; feature tests use `mockall` mocks for their host ports.
 
 ## Checks
 
