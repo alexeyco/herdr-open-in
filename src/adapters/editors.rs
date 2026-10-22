@@ -2,7 +2,7 @@
 //!
 //! This module is data plus detection: [`CATALOG`] lists every editor the
 //! picker can offer, and [`detect`] filters it down to the ones installed on
-//! this machine. Launching lives in `src/launch.rs` (S10). Rows are listed in
+//! this machine. Launching lives in `src/adapters/launch.rs`. Rows are listed in
 //! the order the picker renders them, and [`detect`] preserves that order.
 
 use std::process::{Command, Stdio};
@@ -33,7 +33,7 @@ pub(crate) struct Editor {
     /// Bare CLI command name probed on `PATH`.
     pub cmd: &'static str,
     /// Extra command names probed after [`Editor::cmd`], in order, both for
-    /// detection ([`detect`]) and for `crate::launch::find_cli`. Some distros
+    /// detection ([`detect`]) and for `crate::adapters::launch::find_cli`. Some distros
     /// ship an editor only under an alias (Debian and Ubuntu package the Zed
     /// CLI as `zeditor`), so probing the alias keeps such installs detectable
     /// and launchable. Empty for every row whose command name is the only one.
@@ -176,7 +176,7 @@ pub(crate) fn detect() -> Vec<&'static Editor> {
 
 /// The command names probed for a row, in order: the bare [`Editor::cmd`]
 /// first, then every [`Editor::alts`] entry. Shared by [`detect`] and
-/// `crate::launch::find_cli` so detection and launch always agree on which
+/// `crate::adapters::launch::find_cli` so detection and launch always agree on which
 /// names identify a row.
 pub(crate) fn probe_names(editor: &Editor) -> impl Iterator<Item = &'static str> + '_ {
     std::iter::once(editor.cmd).chain(editor.alts.iter().copied())

@@ -13,6 +13,7 @@ Format Markdown with `make fmt`; CI enforces the formatting check.
 
 ## Conventions
 
+- Branch names use `<type>/<kebab-desc>` (for example, `refactor/simplify-editor-picker`).
 - No `unwrap`/`expect` in production paths; errors are `Result<(), String>`.
 - `#[allow(...)]` only with a comment explaining why.
 - Conventional, lowercase commit messages (`feat: ...`, `fix: ...`); no AI co-author trailers.

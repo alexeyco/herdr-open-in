@@ -11,7 +11,7 @@ use std::process::{Command, Stdio};
 #[cfg(unix)]
 use std::os::unix::process::CommandExt;
 
-use crate::editors::{DIR_PLACEHOLDER, Editor, probe_names};
+use crate::adapters::editors::{DIR_PLACEHOLDER, Editor, probe_names};
 
 /// Program used for the macOS app-bundle fallback.
 const OPEN_PROGRAM: &str = "open";
@@ -215,7 +215,7 @@ fn launcher_missing(editor: &Editor) -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::editors::CATALOG;
+    use crate::adapters::editors::CATALOG;
 
     fn row(id: &str) -> &'static Editor {
         match CATALOG.iter().find(|editor| editor.id == id) {

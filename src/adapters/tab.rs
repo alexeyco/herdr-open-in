@@ -12,7 +12,7 @@ use std::process::Command;
 
 use serde_json::Value;
 
-use crate::editors::Editor;
+use crate::adapters::editors::Editor;
 
 /// Absolute path of the herdr binary that spawned this popup. A bare `herdr` is
 /// never assumed: inside a popup the process environment carries this variable.
