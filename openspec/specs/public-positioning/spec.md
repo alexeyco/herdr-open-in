@@ -2,217 +2,128 @@
 
 ## Purpose
 
-The public-positioning capability is the README `## Comparison` section:
-what it contains, where it sits, how every factual cell is sourced, what
-the plugin may claim about itself relative to the five competitor
-columns, and the manual re-audit rule in CONTRIBUTING.md that keeps the
-section from rotting. It exists so the positioning stays factual,
-neutral, and auditable.
+The README `## Comparison` section presents a factual, sourced comparison
+of this plugin and five other editor-launch tools for herdr. Contributors
+manually review the claims; a monthly workflow checks links and release
+data.
 
 ## Requirements
 
-### Requirement: README carries a sourced, dated Comparison section
+### Requirement: README carries a sourced Comparison section
 
-The README SHALL carry a `## Comparison` section placed directly after
-the `## Usage` section and before `## Editor catalog` — the `##` heading
-order is Requirements, Install, Usage, Comparison, Editor catalog,
-Development, Changelog, License, with every other heading unchanged.
-Inside the section, in this order:
+The README SHALL place `## Comparison` after `## Usage` and before
+`## Editor catalog`. The section SHALL contain an introductory sentence,
+a legend, a seven-row matrix, its source footnotes, an audit date in the
+form `All cells checked YYYY-MM-DD against the linked public sources.`,
+a detailed comparison table, a factual positioning paragraph, and links
+to other herdr plugins, in that order.
 
-1. one intro sentence stating that the section compares this plugin,
-   cell by cell as documented in their public sources, with the other
-   editor-launch tools that integrate with herdr, and the legend line
-   `✅ documented in the linked sources · ⚠️ partial or implemented differently · ❌ not found in the public sources checked`;
-2. the at-a-glance matrix: 7 criterion rows × 6 columns (this plugin
-   plus the five competitors `timofey-TK/herdr-open-in-editor`,
-   `harish-zuper/herdr-open-project-with`,
-   `agentience/herdr-plugin-ide-jump`, `alex-devdone/herdr-cursor-open`,
-   `upnorthmedia/herdr-open-in-editor`), each competitor column header
-   linking its GitHub repo and displayed by short tool name (the
-   `herdr-`/`herdr-plugin-` prefix dropped), except the two repos sharing
-   the name `herdr-open-in-editor`, whose headers display the owner
-   (`timofey-TK`, `upnorthmedia`) to disambiguate — while the subject
-   column header displays `herdr-open-in`; every cell one of ✅/⚠️/❌;
-3. the numbered footnote block whose definitions carry the public source
-   links, markers unique and numbered in reading order;
-4. the dated line
-   `All cells checked 2026-10-18 against the linked public sources.`;
-5. a `<details>` block summarized `Detailed comparison` holding the
-   detailed table with the rows Editor selection, External runtime
-   dependencies, Platforms, Latest release, and License / language over
-   the same six columns;
-6. the positioning paragraph;
-7. an "also exists" lead-in line and a one-line bullet list naming the
-   five further same-space tools with their repo links:
-   `Andreslvc/herdr_plugin`, `gadenbuie/herdr-positron`,
-   `kongdd/herdr-open`, `y-hirakaw/herdr-launcher-pane`,
-   `T0mSIlver/hither`.
+The matrix SHALL compare this plugin with timofey-TK/herdr-open-in-editor,
+harish-zuper/herdr-open-project-with, agentience/herdr-plugin-ide-jump,
+alex-devdone/herdr-cursor-open, and upnorthmedia/herdr-open-in-editor.
+Its criteria SHALL be, in order: opens the workspace via a herdr action;
+picker of choices at one keypress; editors discovered, not preconfigured;
+terminal editors run inside herdr; JetBrains-family coverage; remembers
+the last choice; runs on both Linux and macOS.
 
-The seven matrix criteria SHALL be, in order: opens the workspace via a
-herdr action; picker of choices at one keypress; editors discovered, not
-preconfigured; terminal editors run inside herdr; JetBrains-family
-coverage; remembers the last choice; runs on both Linux and macOS.
+The detailed table SHALL cover editor selection, external runtime
+dependencies, platforms, latest release, and license/language. The
+"also exists" list SHALL link Andreslvc/herdr_plugin,
+gadenbuie/herdr-positron, kongdd/herdr-open, y-hirakaw/herdr-launcher-pane,
+and T0mSIlver/hither.
 
-#### Scenario: Heading order puts Comparison after Usage
+#### Scenario: Section structure and matrix
 
-- **WHEN** the rendered README's `##` headings are read top to bottom
-- **THEN** `## Comparison` appears after the `## Usage` section and
-  before `## Development`, the full order is Requirements, Install,
-  Usage, Comparison, Editor catalog, Development, Changelog, License, and
-  no other heading moved
+- **WHEN** a reader opens the README Comparison section
+- **THEN** it appears between Usage and Editor catalog, follows the
+  required order, and has seven criteria across six columns
 
-#### Scenario: Section anatomy in fixed order
+### Requirement: Comparison claims are sourced and neutral
 
-- **WHEN** a reader opens the `## Comparison` section
-- **THEN** its parts appear in the order: intro sentence + legend line,
-  matrix, footnote block, dated `All cells checked 2026-10-18 …` line,
-  `<details>` "Detailed comparison" table, positioning paragraph,
-  also-exists list
+Every factual cell in both tables SHALL be supported by a uniquely
+numbered footnote linking to a public source, a direct link in the
+detailed table, or the legend's not-found rule for a bare `❌`. Footnotes
+SHALL be numbered in reading order. Every `⚠️`, competitor `✅`, and
+positively documented absence SHALL have a footnote. The legend SHALL
+define `✅`, `⚠️`, and `❌`.
 
-#### Scenario: Seven criteria across six columns
+Latest-release cells SHALL link to the published tag or to the
+repository's releases page when no release exists. License/language
+cells SHALL link to the repository. The audit date SHALL record when
+both tables were manually checked.
 
-- **WHEN** the matrix is read
-- **THEN** it holds exactly the seven criterion rows named above over
-  six columns — this plugin plus timofey-TK/herdr-open-in-editor,
-  harish-zuper/herdr-open-project-with, agentience/herdr-plugin-ide-jump,
-  alex-devdone/herdr-cursor-open, upnorthmedia/herdr-open-in-editor —
-  each competitor header a link to its GitHub repo displayed by
-  short tool name (owner for the two `herdr-open-in-editor` repos), and
-  every cell one of ✅/⚠️/❌ (with a footnote marker
-  where the requirement "Every factual cell is sourced and the legend
-  defines the states" demands one)
+The section SHALL use neutral, factual language. Its positioning
+paragraph SHALL limit any uniqueness claim to the combination of a
+picker for locally discovered editors, terminal editors running in
+herdr tabs, macOS app-bundle fallback for GUI editors without a CLI, and
+last-choice memory. It SHALL NOT claim broader or single-feature
+uniqueness.
 
-#### Scenario: Also-exists list names the five further tools
+#### Scenario: Cells have evidence and the claims stay neutral
 
-- **WHEN** the reader reaches the end of the section
-- **THEN** an also-exists list gives one line each, with a repo link,
-  for Andreslvc/herdr_plugin, gadenbuie/herdr-positron, kongdd/herdr-open,
-  y-hirakaw/herdr-launcher-pane, and T0mSIlver/hither
+- **WHEN** a factual cell or the positioning paragraph is reviewed
+- **THEN** the cell has an allowed source, absences use the legend rule,
+  and the paragraph claims only the supported four-part combination
 
-### Requirement: Every factual cell is sourced and the legend defines the states
+#### Scenario: Release and license cells link to their sources
 
-Every factual cell of both tables SHALL carry a source that supports it:
-a uniquely numbered footnote whose definition carries a public link (the
-competitor's GitHub repo, or — for file-level evidence — a blob URL at
-that repo), a direct external link inside the detailed cell, or — for
-bare ❌ matrix cells — the legend's `not found in the public sources
-checked` rule: a bare ❌ states that the feature is not documented in the
-project's public sources, negative searches performed 2026-10-18, and is
-a sourced negative claim under the dated line. Every ⚠️ cell, every
-competitor ✅ cell, and every ❌ cell whose absence is positively
-documented in the project's public sources (a stated platform list, a
-stated "no picker" design) SHALL carry a footnote; a subject ✅ cell
-whose evidence is self-evident from this repository's README needs none.
-Markers SHALL be unique and numbered in reading order — matrix rows top
-to bottom, cells left to right — none
-reused; identical evidence used at two positions yields two numbered
-definitions with identical text. In the detailed table's Latest release
-row, each competitor cell SHALL carry the shape
-`[<tag>](https://github.com/<owner>/<repo>/releases/tag/<tag>)` when the
-repo publishes a release and `[no releases](https://github.com/<owner>/<repo>/releases)`
-when it publishes none; the subject cell links
-`https://github.com/alexeyco/herdr-open-in/releases` without a pinned
-tag. Each License / language cell SHALL carry the shape
-`[<license> · <language>](https://github.com/<owner>/<repo>)`, or
-`no license file` in place of `<license>` when the repo publishes none.
-The dated line SHALL sit directly under the footnote block and cover
-both tables; it records the human audit performed 2026-10-18.
+- **WHEN** the detailed table's release and license/language rows are
+  inspected
+- **THEN** release cells link to a tag or the releases page, and
+  license/language cells link to the corresponding repository
 
-#### Scenario: Legend defines the three states
+### Requirement: Contributors manually re-audit comparison claims
 
-- **WHEN** a reader sees ✅, ⚠️, or ❌ cells in the matrix
-- **THEN** the legend line directly above the matrix defines all three
-  states, and the ❌ wording states the bare-❌ rule that keeps
-  unfootnoted ❌ cells sourced negative claims — the search date
-  (2026-10-18) is carried by the dated line under the footnote block,
-  not by the legend text itself
+Under `## Conventions`, CONTRIBUTING.md SHALL require an edit to the
+README Comparison section to re-audit every cell in both tables against
+the linked public sources and update the audit date in the same change.
+This review covers the factual meaning of cells; the scheduled checker
+does not perform that semantic review or change the date.
 
-#### Scenario: Questioned cell carries its source
+#### Scenario: Comparison edits receive a manual audit
 
-- **WHEN** any factual cell — matrix or detailed — is questioned
-- **THEN** it carries a public source: a uniquely numbered footnote whose
-  definition links the competitor's GitHub repo or a blob URL at it, a
-  direct external link in the detailed cell, or — for a bare ❌ matrix
-  cell — the legend's not-found rule with the dated line; no cell rests
-  on an uncited claim
+- **WHEN** a contributor changes comparison content
+- **THEN** every cell is checked against its source and the audit date
+  is updated in the same change, regardless of the scheduled check
 
-#### Scenario: Dated line is verbatim
+### Requirement: Monthly comparison freshness is checked automatically
 
-- **WHEN** the footnote block is read to its end
-- **THEN** the next line is exactly
-  `All cells checked 2026-10-18 against the linked public sources.`
+The repository SHALL provide `.github/workflows/comparison-freshness.yml`
+with workflow display name `Comparison Freshness`, job key
+`comparison-freshness`, and job display name `Comparison Freshness`. It
+SHALL run at `0 6 1 * *` and support `workflow_dispatch`.
 
-#### Scenario: Release cells carry the linked shape
+The checker SHALL compare configured upstream latest-release tags with
+the README release cells, check HTTP(S) links in the Comparison section,
+and confirm configured release cells are present. It SHALL NOT infer or
+change the factual meaning of comparison claims or update the manual
+audit date. Release-tag drift SHALL produce a reviewable rolling pull
+request; other reachable drift SHALL be reported in one issue; an
+unavailable source SHALL fail the run without creating either artifact.
 
-- **WHEN** the detailed table's Latest release row is inspected
-- **THEN** each competitor cell is either
-  `[<tag>](https://github.com/<owner>/<repo>/releases/tag/<tag>)` or
-  `[no releases](https://github.com/<owner>/<repo>/releases)`, with no
-  release date in the cell, and the subject cell links
-  `https://github.com/alexeyco/herdr-open-in/releases` with no pinned tag
+#### Scenario: Scheduled and manual checks are available
 
-### Requirement: Comparison stays neutral and claims only the defensible combination
+- **WHEN** the first day of a month arrives at 06:00 UTC or a maintainer
+  dispatches the workflow
+- **THEN** the named job checks the README Comparison section
 
-The section SHALL use neutral, factual language — no evaluative verdicts
-("better", "worse", "inferior"); absences are stated as sourced facts
-linked to the competitor's public sources or covered by the legend's
-not-found rule. The positioning paragraph's uniqueness claim SHALL be
-limited to the combination of (1) a picker of editors discovered from
-the machine, (2) terminal editors (nvim, vim, helix) running in herdr
-tabs, (3) the macOS app-bundle fallback for GUI editors whose CLI is
-missing, and (4) last-choice memory — the combination no compared
-competitor column matches in the matrix. No broader "only tool that …"
-statement SHALL appear, and no single-criterion uniqueness SHALL be
-claimed beyond what the matrix cells evidence.
+#### Scenario: Drift is routed safely
 
-#### Scenario: Unique-combination claim only
+- **WHEN** release tags drift, another checked source drifts, or a
+  required source is unavailable
+- **THEN** release drift opens or updates a pull request, other drift
+  opens or updates an issue, and unavailable sources fail without
+  creating either artifact or writing directly to the base branch
 
-- **WHEN** the positioning paragraph asserts what distinguishes this
-  plugin
-- **THEN** the claim names exactly the four-part combination above, is
-  phrased as a combination, and no other criterion is claimed as unique
+### Requirement: Other herdr plugins list links current sibling plugins
 
-#### Scenario: Absence stated neutrally
-
-- **WHEN** the tables record what a competitor lacks — a ❌ or ⚠️ cell,
-  such as a macOS-only platform list or a fixed configured editor
-- **THEN** the absence is stated as a fact linked to the competitor's
-  public source or covered by the legend's not-found rule, and no
-  evaluative adjective appears anywhere in the section
-
-### Requirement: CONTRIBUTING carries the manual re-audit rule
-
-CONTRIBUTING.md SHALL carry, under `## Conventions`, one rule sentence:
-an edit that touches the README `## Comparison` section re-audits every
-cell of both tables against the linked public sources and updates the
-`All cells checked …` date in the same change. This rule SHALL be the
-only freshness mechanism the capability requires — no bot and no script
-is required for, or may be introduced as part of, comparison freshness.
-
-#### Scenario: Re-audit rule exists
-
-- **WHEN** a contributor reads `## Conventions` in CONTRIBUTING.md
-- **THEN** one bullet states that touching the README `## Comparison`
-  section requires re-auditing the cells against the linked public
-  sources and updating the `All cells checked …` date in the same change
-
-#### Scenario: Freshness mechanism stays manual
-
-- **WHEN** the repository is inspected for comparison-freshness
-  enforcement
-- **THEN** the CONTRIBUTING rule is the whole mechanism: no bot, no
-  scheduled workflow, and no script guards the Comparison section
-
-### Requirement: Other herdr plugins list links the current sibling plugins
-
-The README's "Other herdr plugins" list SHALL hold exactly two entries —
-herdr-gitui (`https://github.com/alexeyco/herdr-gitui`) and herdr-review
+The README's "Other herdr plugins" list SHALL contain exactly herdr-gitui
+(`https://github.com/alexeyco/herdr-gitui`) and herdr-review
 (`https://github.com/alexeyco/herdr-review`), each with a one-line
-description — and SHALL NOT list herdr-revdiff, mirroring herdr-review's
-own list, which already links this plugin.
+description, and SHALL NOT list herdr-revdiff.
 
 #### Scenario: Cross-link list contents
 
 - **WHEN** the "Other herdr plugins" list under the README intro is read
-- **THEN** it names herdr-gitui and herdr-review with working GitHub
-  links and one-line descriptions, and no herdr-revdiff entry remains
+- **THEN** it names herdr-gitui and herdr-review with GitHub links and
+  one-line descriptions, and has no herdr-revdiff entry

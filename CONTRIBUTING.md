@@ -18,7 +18,7 @@ Format Markdown with `make fmt`; CI enforces the formatting check.
 - `#[allow(...)]` only with a comment explaining why.
 - Conventional, lowercase commit messages (`feat: ...`, `fix: ...`); no AI co-author trailers.
 - Run the checks in [docs/development.md](docs/development.md) → Checks before pushing.
-- An edit that touches the README `## Comparison` section re-audits every cell of both tables against the linked public sources and updates the `All cells checked …` date in the same change.
+- An edit that touches the README `## Comparison` section re-audits every cell of both tables against the linked public sources and updates the `All cells checked …` date in the same change. The monthly freshness workflow checks configured release tags, release-cell presence, and HTTP(S) link liveness; it does not verify the meaning of comparison claims or update the checked date.
 
 ## Workflow
 
